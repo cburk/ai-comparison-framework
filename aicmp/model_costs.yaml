@@ -1,0 +1,37 @@
+# $ per million tokens. Used by `inspect eval --model-cost-config aicmp/model_costs.yaml`
+# (adds cost to the log viewer) and by `python -m aicmp.report`.
+# Sources, checked 2026-09-26/27: Anthropic model table (claude-api reference; cache write =
+# 1.25x input for the 5-minute TTL, cache read = 0.1x input) and ai.google.dev/gemini-api/docs/pricing.
+# Re-check before quoting results; prices change.
+anthropic/claude-sonnet-5:
+  input: 2.00
+  output: 10.00
+  input_cache_write: 2.50
+  input_cache_read: 0.20
+anthropic/claude-opus-5:
+  input: 5.00
+  output: 25.00
+  input_cache_write: 6.25
+  input_cache_read: 0.50
+anthropic/claude-haiku-4-5:
+  input: 1.00
+  output: 5.00
+  input_cache_write: 1.25
+  input_cache_read: 0.10
+# Promotional rate through 2026-12-31; Google says it doubles on 2027-01-01.
+google/gemini-3.8-flash:
+  input: 0.75
+  output: 3.75
+  input_cache_write: 0.75
+  input_cache_read: 0.075
+# 2.5 Flash is what the post used, but new API accounts get a 404 for it.
+google/gemini-2.5-flash:
+  input: 0.30
+  output: 2.50
+  input_cache_write: 0.30
+  input_cache_read: 0.03
+google/gemini-2.5-flash-lite:
+  input: 0.10
+  output: 0.40
+  input_cache_write: 0.10
+  input_cache_read: 0.01

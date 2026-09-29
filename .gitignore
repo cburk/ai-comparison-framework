@@ -30,3 +30,14 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# Python / project
+.venv/
+__pycache__/
+*.egg-info/
+logs/
+scratch_logs/
+err-shunt-*.txt
+aicmp/data/needle/
+aicmp/data/codebase/
+.pytest_cache/

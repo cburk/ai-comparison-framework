@@ -1,0 +1,10 @@
+services:
+  default:
+    build: .
+    image: aicmp-sandbox:latest
+    init: true
+    command: tail -f /dev/null
+    working_dir: /workspace
+    network_mode: none
+    mem_limit: 2g
+    cpus: 1.0

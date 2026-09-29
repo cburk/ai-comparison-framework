@@ -1,0 +1,31 @@
+[project]
+name = "aicmp"
+version = "0.1.0"
+description = "Side-by-side comparison of AI models and agent configurations, built on Inspect AI"
+requires-python = ">=3.11"
+dependencies = [
+  "inspect-ai",
+  "inspect-swe",
+  "anthropic",
+  "openai",
+  "google-genai",
+  "pandas",
+  "pyarrow",
+  "pyyaml",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["aicmp*"]
+
+[tool.setuptools.package-data]
+aicmp = ["data/**/*", "shunt/claude/**/*", "model_costs.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
