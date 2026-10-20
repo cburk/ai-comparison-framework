@@ -1,0 +1,7 @@
+{
+  "statusLine": {
+    "type": "command",
+    "command": "python3 /Users/Shared/proj/ai-comparison-framework/shunt-claude/demo/statusline.py",
+    "refreshInterval": 2
+  }
+}

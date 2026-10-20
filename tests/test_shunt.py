@@ -2,7 +2,9 @@
 
 import ast
 import json
+import os
 import subprocess
+import uuid
 import sys
 
 import pytest
@@ -16,10 +18,10 @@ HOOK = SHUNT_DIR / "claude" / "hooks" / "shunt_check.py"
 BIG = "ledgerline/payments/capture.py"
 
 
-def run_hook(payload: dict, cwd) -> subprocess.CompletedProcess:
+def run_hook(payload: dict, cwd, env: dict | None = None) -> subprocess.CompletedProcess:
     return subprocess.run(
         [sys.executable, str(HOOK)], input=json.dumps(payload), cwd=cwd,
-        capture_output=True, text=True,
+        capture_output=True, text=True, env=None if env is None else {**os.environ, **env},
     )
 
 
@@ -95,3 +97,35 @@ def test_correct_ignores_format_and_distractors():
     assert answer_line(writeup) == ""
     assert check_answer(writeup, target, forbid=False)[0]
     assert not check_answer(writeup, target)[0]
+
+
+def read(path, **kw):
+    return {"tool_name": "Read", "session_id": kw.pop("sid", "t"), "tool_input": {"file_path": path, **kw}}
+
+
+def test_paging_is_blocked_only_when_tracked():
+    cwd, run = generate(), uuid.uuid4().hex
+    slices = [read(BIG, offset=i * 300, limit=300, sid=f"p-{run}") for i in range(3)]
+    # stock behaviour: any slice <= limit passes, so paging a big file is never blocked
+    assert all(run_hook(p, cwd).returncode == 0 for p in slices)
+    env = {"SHUNT_TRACK_PAGING": "1"}
+    codes = [run_hook(p, cwd, env).returncode for p in slices]
+    assert codes == [0, 2, 2]  # 300 ok, 600 > 350 blocked
+    # a different file is unaffected, and so is a small file
+    assert run_hook(read("ledgerline/__init__.py", sid=f"p-{run}"), cwd, env).returncode == 0
+
+
+def test_session_budget_blocks_further_mid_size_reads():
+    cwd, run = generate(), uuid.uuid4().hex
+    env = {"SHUNT_SESSION_LINES": "500", "SHUNT_SESSION_MIN_LINES": "100"}
+    mid = "ledgerline/payments/capture.py"
+    small = "ledgerline/__init__.py"
+    r1 = run_hook(read(mid, offset=0, limit=300, sid=f"b-{run}"), cwd, env)   # 300 read
+    r2 = run_hook(read(mid, offset=300, limit=300, sid=f"b-{run}"), cwd, env)  # 600 read, budget hit
+    r3 = run_hook(read(mid, offset=600, limit=50, sid=f"b-{run}"), cwd, env)   # over budget
+    assert (r1.returncode, r2.returncode, r3.returncode) == (0, 0, 2)
+    assert "budget 500" in r3.stderr and "mcp__shunt__bulk_read" in r3.stderr
+    # tiny files stay readable after the budget is spent
+    assert run_hook(read(small, sid=f"b-{run}"), cwd, env).returncode == 0
+    # budgets are per session
+    assert run_hook(read(mid, offset=0, limit=50, sid=f"other-{run}"), cwd, env).returncode == 0

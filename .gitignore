@@ -41,3 +41,6 @@ err-shunt-*.txt
 aicmp/data/needle/
 aicmp/data/codebase/
 .pytest_cache/
+
+# shunt demo run output
+shunt-claude/demo/results/

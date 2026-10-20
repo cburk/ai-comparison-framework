@@ -88,6 +88,13 @@ The post measured only Claude's tokens. The report shows that number ("main tok"
 cache reads (billed at 0.1x, which is what most of a direct read turns into after the first
 turn), delegate cost, total $, and accuracy. A 90% token drop doesn't mean a 90% cost drop.
 
+### Shunt in a real Claude Code setup, with Haiku 5.5 as the reader (`shunt-claude/`)
+
+Ports the same hook to a normal Claude Code install and replaces the Gemini delegate with
+headless `claude -p --model claude-haiku-5-5` behind a small stdio MCP server. Install with
+`python3 shunt-claude/install.py [--scope user]`. Design, measurements, the Haiku 100K-token
+pricing cliff, caveats and a demo script are in [`shunt-claude/NOTES.md`](shunt-claude/NOTES.md).
+
 ## Known limitations (current state)
 
 - Tasks run in a Docker sandbox (`aicmp/docker`: python + pytest + curl, no network, 2GB/1 CPU).
